@@ -11,9 +11,9 @@ const App = () => {
   const { loggedIn, existingUser } = useContext(AppContext);
 
   return (
-      <div className={`bg-black h-screen ${loggedIn && 'px-12 py-8'}`}>
+      <div className={`bg-black h-screen ${loggedIn && existingUser && 'px-12 py-8'}`}>
         {/* Navbar is visible only of the user is logged in */}
-        {loggedIn && <Navbar />}
+        {loggedIn && existingUser && <Navbar />}
         <Routes>
 
           {/* Home is only accessible when the user is logged in */}
