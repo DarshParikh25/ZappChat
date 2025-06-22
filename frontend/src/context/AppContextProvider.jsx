@@ -6,6 +6,9 @@ const AppContextProvider = (props) => {
 
     const [selectedUser, setSelectedUser] = useState({});
     const [showUserProfileSec, setShowUserProfileSec] = useState(false);
+    const [loggedIn, setLoggedIn] = useState(false);
+    const [existingUser, setExistingUser] = useState(false);
+    const [state, setState] = useState('login');
 
     const [users, setUsers] = useState([
         {
@@ -167,8 +170,14 @@ const AppContextProvider = (props) => {
         chatSecRef,
         showUserProfileSec,
         setShowUserProfileSec,
+        loggedIn, 
+        setLoggedIn,
         messagesDummyData,
-        imagesDummyData
+        imagesDummyData,
+        state,
+        setState,
+        existingUser,
+        setExistingUser
     }
 
     return (

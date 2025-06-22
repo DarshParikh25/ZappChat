@@ -1,8 +1,11 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
+import AppContext from '../context/AppContext';
 
 const Navbar = () => {
     const navigate = useNavigate();
+
+    const { setLoggedIn } = useContext(AppContext);
 
     const [menuOpen, setMenuOpen] = useState(false);
 
@@ -21,7 +24,12 @@ const Navbar = () => {
             </div>
             <div className='flex gap-7 max-md:hidden justify-center items-center text-sm'>
                 <p onClick={() => {navigate('/profile'); setMenuOpen(false)}} className='cursor-pointer text-[#c7c5b6] underline underline-offset-4 hover:scale-[1.03] transition-all duration-500'>Edit Profile</p>
-                <button className='cursor-pointer bg-[#c7c5b6] rounded-full px-5 py-2 hover:bg-[#a9a89b]'>Logout</button>
+                <button 
+                    onClick={() => {setLoggedIn(false)}}
+                    className='cursor-pointer bg-[#c7c5b6] rounded-full px-5 py-2 hover:bg-[#a9a89b]'
+                >
+                    Logout
+                </button>
             </div>
         </div>
     )

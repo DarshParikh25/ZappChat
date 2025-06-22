@@ -1,23 +1,49 @@
-import React from 'react'
-import { Route, Routes } from 'react-router-dom'
+import React, { useContext } from 'react'
+import { Route, Routes, Navigate } from 'react-router-dom'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Profile from './pages/Profile'
 import Navbar from './components/Navbar'
-import AppContextProvider from './context/AppContextProvider'
+import AppContext from './context/AppContext'
+import SignUp from './pages/SignUp'
 
 const App = () => {
+  const { loggedIn, existingUser } = useContext(AppContext);
+
   return (
-    <AppContextProvider>
-      <div className='bg-[#0A0A0A] h-screen px-12 py-8'>
-        <Navbar />
+      <div className={`bg-black h-screen ${loggedIn && 'px-12 py-8'}`}>
+        {/* Navbar is visible only of the user is logged in */}
+        {loggedIn && <Navbar />}
         <Routes>
-          <Route path='/' element={ <Home /> } />
-          <Route path='/login' element={ <Login /> } />
-          <Route path='/profile' element={ <Profile /> } />
+
+          {/* Home is only accessible when the user is logged in */}
+          <Route path='/' element={
+            loggedIn ? <>{existingUser ? <Home /> : <Navigate to={'/profile'} />}</> : <Navigate to={'/login'} />
+          } />
+
+          {/* Profile Section is also only accessible when the user is logged in */}
+          <Route path='/profile' element={
+            loggedIn ? <Profile /> : <Navigate to={'/login'} />
+          } />
+
+          {/* Login Page will be rendered */}
+          <Route path='/login' element={
+            !loggedIn ? <Login /> : <Navigate to={'/'} />
+          } />
+
+          {/* Sign Up Page will be rendered if the user is not already registered */}
+          <Route path='/sign-up' element={
+            !loggedIn ? <SignUp /> : <Navigate to={'/'} />
+          } />
+
+          {/* Default routes to login to handle all the routes */}
+          <Route path='*' element={
+            <Navigate to={
+              loggedIn ? '/' : '/login'
+            } />
+          } />
         </Routes>
       </div>
-    </AppContextProvider>
   )
 }
 
