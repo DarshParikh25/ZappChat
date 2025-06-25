@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 
 import User from "../models/user.js";
 import { generateToken } from '../lib/utils.js';
+import cloudinary from '../lib/cloudinary.js';
 
 // Register a new user
 const signUp = async (req, res) => {
@@ -100,6 +101,42 @@ const logIn = async (req, res) => {
             success: true,
             token,
             message: 'Successfully logged in!'
+        });
+    } catch (error) {
+        console.log(error.message);
+        res.json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+// Controller to check the user's authentication status
+const checkAuth = (req, res) => {
+    res.json({
+        success: true,
+        user: req.user
+    });
+}
+
+// Update user profile details
+const updateProfile = async (req, res) => {
+    try {
+        const { profilePic, bio, name } = req.body;
+        const userId = req.user._id;
+
+        let updatedUser;
+
+        if(!profilePic) {
+            updatedUser = await User.findByIdAndUpdate(userId, { bio, name }, { new: true });
+        } else {
+            const uploadImage = await cloudinary.uploader.upload(profilePic);
+            updatedUser = await User.findByIdAndUpdate(userId, { profilePic: uploadImage.secure_url, bio, name }, { new: true });
+        }
+        res.json({
+            success: true,
+            user: updatedUser,
+            message: 'Successfully updated the profile details!'
         })
     } catch (error) {
         console.log(error.message);
@@ -110,10 +147,9 @@ const logIn = async (req, res) => {
     }
 }
 
-// Controller to check the user's authentication status
-
-
 export default {
     signUp,
-    logIn
+    logIn,
+    checkAuth,
+    updateProfile
 };
