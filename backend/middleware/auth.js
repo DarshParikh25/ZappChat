@@ -23,7 +23,7 @@ export const protectRoute = async (req, res, next) => {
 
         next();
     } catch (error) {
-        console.log(error.message);
+        console.log("auth error: ", error.message);
         res.json({
             success: false,
             message: error.message

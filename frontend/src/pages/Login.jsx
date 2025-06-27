@@ -3,17 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import AppContext from '../context/AppContext';
 
 const Login = () => {
-    const { setState, setLoggedIn, setExistingUser } = useContext(AppContext);
+    const { setState, setLoggedIn, login, setNav } = useContext(AppContext);
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
     const navigate = useNavigate();
     
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoggedIn(true);
-        setExistingUser(true);
+        const res = await login({ 
+            email,
+            password
+        })
+        if(res.success) {
+            setLoggedIn(true);
+            setNav(true);
+            navigate('/');
+        }
     }
 
     return (

@@ -20,7 +20,8 @@ const userSchema = new Schema({
         default: ''
     },
     bio: {
-        type: String
+        type: String,
+        default: ''
     }
 }, { timestamps: true });
 

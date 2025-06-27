@@ -1,5 +1,7 @@
-import React, { useContext } from 'react'
-import { Route, Routes, Navigate } from 'react-router-dom'
+import React, { useContext } from 'react';
+import { Route, Routes, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Profile from './pages/Profile'
@@ -8,17 +10,19 @@ import AppContext from './context/AppContext'
 import SignUp from './pages/SignUp'
 
 const App = () => {
-  const { loggedIn, existingUser } = useContext(AppContext);
+  const { loggedIn, authUser, nav } = useContext(AppContext);
 
   return (
-      <div className={`bg-black h-screen ${loggedIn && existingUser && 'px-12 py-8'}`}>
+      <div className={`bg-black h-screen ${loggedIn && nav && 'px-12 py-8'}`}>
+        <Toaster />
+
         {/* Navbar is visible only of the user is logged in */}
-        {loggedIn && existingUser && <Navbar />}
+        {loggedIn && nav && <Navbar />}
         <Routes>
 
           {/* Home is only accessible when the user is logged in */}
           <Route path='/' element={
-            loggedIn ? <>{existingUser ? <Home /> : <Navigate to={'/profile'} />}</> : <Navigate to={'/login'} />
+            loggedIn ? <>{authUser !== null ? <Home /> : <Navigate to={'/profile'} />}</> : <Navigate to={'/login'} />
           } />
 
           {/* Profile Section is also only accessible when the user is logged in */}

@@ -1,105 +1,39 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import io from 'socket.io-client';
+
 import AppContext from "./AppContext";
+
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
+axios.defaults.baseURL = backendUrl;
 
 const AppContextProvider = (props) => {
     const chatSecRef = useRef();
+    const previousPathRef = useRef();
+
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const [selectedUser, setSelectedUser] = useState({});
     const [showUserProfileSec, setShowUserProfileSec] = useState(false);
     const [loggedIn, setLoggedIn] = useState(false);
-    const [existingUser, setExistingUser] = useState(false);
     const [state, setState] = useState('login');
-
-    const [users, setUsers] = useState([
-        {
-            _id: "1",
-            name: 'Darsh Parikh',
-            email: 'parikhdarsh121@gmail.com',
-            profilePic: '/avatar.png',
-            bio: "Success will come not immediately, but definitely!",
-            status: 'Online',
-            newMess: 3
-        },
-        {
-            _id: "2",
-            name: 'Fardeen Malik',
-            email: 'parikhdarsh121@gmail.com',
-            profilePic: '/avatar.png',
-            bio: "Success will come not immediately, but definitely!",
-            status: 'Online'
-        },
-        {
-            _id: "3",
-            name: 'Hriday Patel',
-            email: 'parikhdarsh121@gmail.com',
-            profilePic: '/avatar.png',
-            bio: "Success will come not immediately, but definitely!",
-            status: 'Offline',
-            newMess: 3
-        },
-        {
-            _id: "4",
-            name: 'Anubhav Pariya',
-            email: 'parikhdarsh121@gmail.com',
-            profilePic: '/avatar.png',
-            bio: "Success will come not immediately, but definitely!",
-            status: 'Offline'
-        },
-        {
-            _id: "5",
-            name: 'Sauvik Nandi',
-            email: 'parikhdarsh121@gmail.com',
-            profilePic: '/avatar.png',
-            bio: "Success will come not immediately, but definitely!",
-            status: 'Offline',
-            newMess: 1
-        },
-        {
-            _id: "6",
-            name: 'Divyanshu Manjhi',
-            email: 'parikhdarsh121@gmail.com',
-            profilePic: '/avatar.png',
-            bio: "Success will come not immediately, but definitely!",
-            status: 'Offline',
-            newMess: 2
-        },
-        {
-            _id: "7",
-            name: 'Bishal Nag',
-            email: 'parikhdarsh121@gmail.com',
-            profilePic: '/avatar.png',
-            bio: "Success will come not immediately, but definitely!",
-            status: 'Online',
-            newMess: 2
-        },
-        {
-            _id: "8",
-            name: 'Rupak S V',
-            email: 'parikhdarsh121@gmail.com',
-            profilePic: '/avatar.png',
-            bio: "Success will come not immediately, but definitely!",
-            status: 'Offline',
-            newMess: 3
-        },
-        {
-            _id: "9",
-            name: 'Sourin Roy',
-            email: 'parikhdarsh121@gmail.com',
-            profilePic: '/avatar.png',
-            bio: "Success will come not immediately, but definitely!",
-            status: 'Offline',
-            newMess: 0
-        },
-        {
-            _id: "10",
-            name: 'Dhruti Khatsuriya',
-            email: 'parikhdarsh121@gmail.com',
-            profilePic: '/avatar.png',
-            bio: "Success will come not immediately, but definitely!",
-            status: 'Online',
-            newMess: 2
-        },
-    ])
+    const [nav, setNav] = useState(false);
+    const [token, setToken] = useState(localStorage.getItem('token'));
+    const [authUser, setAuthUser] = useState(null);
+    const [onlineUsers, setOnlineUsers] = useState([]);
+    const [socket, setSocket] = useState(null);
+        // {
+        //     _id: "1",
+        //     name: 'Darsh Parikh',
+        //     email: 'parikhdarsh121@gmail.com',
+        //     profilePic: '/avatar.png',
+        //     bio: "Success will come not immediately, but definitely!",
+        //     status: 'Online',
+        //     newMess: 3
+        // }
 
     const messagesDummyData = [
         {
@@ -159,14 +93,144 @@ const AppContextProvider = (props) => {
             "createdAt": "2025-04-28T10:24:08.523Z",
         }
     ]
-
+    
     const imagesDummyData = ['/pic1.png', '/pic2.png','/pic3.png','/pic4.png','/pic1.png','/pic2.png']
+
+    useEffect(() => {
+        const currentPath = location.pathname;
+        const previousPath = previousPathRef.current;
+
+        // Set nav as true if user goes back from /profile to /
+        if (currentPath === '/' && previousPath === '/profile') {
+            setNav(true);
+        }
+
+        // Prevent back to login/signup if user is already logged in and authenticated
+        const publicRoutes = ['/login', '/sign-up'];
+        if (loggedIn && authUser !== null && publicRoutes.includes(currentPath)) {
+            navigate('/', { replace: true });
+        }
+
+        // Store current path for next render
+        previousPathRef.current = currentPath;
+    }, [location.pathname, loggedIn, authUser]);
+
+    // Function to handle socket connection and online users updates
+    const connectSocket = async (userData) => {
+        if(!userData || socket?.connected) {
+            return;
+        }
+        const newSocket = io(backendUrl, {
+            query: {
+                userId: userData._id
+            }
+        })
+        setSocket(newSocket);
+        newSocket.on('getOnlineUsers', (userIds) => {
+            setOnlineUsers(userIds);
+        })
+    }
+    
+    // Check if the user is authenticated or not. If yes, then set the user's data and connect to the socket
+    const checkAuth = async () => {
+        try {
+            const { data } = await axios.get('/api/auth/check');
+            if(data.success) {
+                setAuthUser(data.user)
+                connectSocket(data.user)
+            }
+        } catch (error) {
+            toast.error(error.message)
+        }
+    }
+
+    // Handle login for user authentication and socket connection
+    const login = async (credentials) => {
+        try {
+            const { data } = await axios.post('/api/auth/login', credentials);
+            if(data.success) {
+                setSocket(data.userData);
+                connectSocket(data.userData);
+                axios.defaults.headers.common['token'] = data.token;
+                setAuthUser(data.userData);
+                localStorage.setItem('token', data.token);
+                toast.success(data.message);
+                return { success: true };
+            } else {
+                toast.error(data.message);
+                return { success: false };
+            }
+        } catch (error) {
+            toast.error(error.message);
+            return { success: false };
+        }
+    }
+
+    // Handle login for user authentication and socket connection
+    const register = async (credentials) => {
+        try {
+            const { data } = await axios.post('/api/auth/sign-up', credentials);
+            if(data.success) {
+                setSocket(data.userData);
+                connectSocket(data.userData);
+                axios.defaults.headers.common['token'] = data.token;
+                // setAuthUser(data.userData);
+                localStorage.setItem('token', data.token);
+                toast.success(data.message);
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message);
+        }
+    }
+
+    // handle logout for user logout and socket disconnection
+    const logout = () => {
+        localStorage.removeItem('token');
+        setToken(null);
+        setAuthUser(null);
+        setNav(false);
+        setLoggedIn(false);
+        setOnlineUsers([]);
+        delete axios.defaults.headers.common['token'];
+        toast.success('Logged out successfully!');
+        if(socket) {
+            socket.disconnect();
+            setSocket(null);
+        }
+    }
+
+    // Update user's profile
+    const updateProfile = async (updatedFields) => {
+        try {
+            const { data } = await axios.put('/api/auth/update-profile', updatedFields);
+            if(data.success) {
+                setAuthUser(data.user);
+                toast.success('Profile Updated Successfully!');
+                return { success: true }
+            } else {
+                toast.error(data.message);
+                return { success: false }
+            }
+        } catch (error) {
+            toast.error(error.message);
+            return { success: false }
+        }
+    }
+
+    useEffect(() => {
+        if(token) {
+            axios.defaults.headers.common['token'] = token;
+        }
+        checkAuth();
+    }, [])
 
     const value = {
         selectedUser,
         setSelectedUser,
-        users,
-        setUsers,
+        onlineUsers,
+        setOnlineUsers,
         chatSecRef,
         showUserProfileSec,
         setShowUserProfileSec,
@@ -176,8 +240,20 @@ const AppContextProvider = (props) => {
         imagesDummyData,
         state,
         setState,
-        existingUser,
-        setExistingUser
+        authUser,
+        setAuthUser,
+        nav,
+        setNav,
+        token,
+        setToken,
+        socket,
+        setSocket,
+        checkAuth,
+        connectSocket,
+        login,
+        register,
+        logout,
+        updateProfile
     }
 
     return (

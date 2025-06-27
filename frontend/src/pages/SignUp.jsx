@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AppContext from '../context/AppContext';
 
 const SignUp = () => {
-    const { setState, setLoggedIn } = useContext(AppContext);
+    const { setState, setLoggedIn, register, authUser } = useContext(AppContext);
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -13,9 +13,15 @@ const SignUp = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        setState('login');
-        setLoggedIn(true);
-        navigate('/profile');
+        register({ 
+            name,
+            email,
+            password
+        })
+        if(authUser === null) {
+            setLoggedIn(true);
+            navigate('/profile');
+        }
     }
 
     return (

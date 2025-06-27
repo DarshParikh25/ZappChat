@@ -5,8 +5,8 @@ import { generateToken } from '../lib/utils.js';
 import cloudinary from '../lib/cloudinary.js';
 
 // Register a new user
-const signUp = async (req, res) => {
-    const { name, email, password, bio } = req.body;
+export const signUp = async (req, res) => {
+    const { name, email, password } = req.body;
 
     try {
         if(!name) {
@@ -18,11 +18,6 @@ const signUp = async (req, res) => {
             return res.json({
                 success: false,
                 message: 'Missing credentials! Please provide your email address!'
-            })
-        } else if(!bio) {
-            return res.json({
-                success: false,
-                message: 'Missing credentials! Please provide your profile bio!'
             })
         } else if(!password) {
             return res.json({
@@ -36,7 +31,7 @@ const signUp = async (req, res) => {
         if(user) {
             return res.json({
                 success: false,
-                message: 'Already already exists! Please log in to your account.'
+                message: 'User already exists! Please log in to your account.'
             })
         }
 
@@ -46,8 +41,7 @@ const signUp = async (req, res) => {
         const newUser = await User.create({
             name,
             email,
-            password: hashedPass,
-            bio
+            password: hashedPass
         });
 
         const token = generateToken(newUser._id);
@@ -59,7 +53,7 @@ const signUp = async (req, res) => {
             message: "Account created successfully!"
         })
     } catch (error) {
-        console.log(error.message);
+        console.log("sign up error: ", error.message);
         res.json({
             success: false,
             message: error.message
@@ -68,7 +62,7 @@ const signUp = async (req, res) => {
 }
 
 // Log In an existing user
-const logIn = async (req, res) => {
+export const logIn = async (req, res) => {
     try {
         const { email, password } = req.body;
 
@@ -85,6 +79,13 @@ const logIn = async (req, res) => {
         }
 
         const userData = await User.findOne({ email });
+
+        if(userData === null) {
+            return res.json({
+                success: false,
+                message: 'User does not exists. Please register first!'
+            })
+        }
 
         const isPassCorrect = await bcrypt.compare(password, userData.password);
 
@@ -103,7 +104,7 @@ const logIn = async (req, res) => {
             message: 'Successfully logged in!'
         });
     } catch (error) {
-        console.log(error.message);
+        console.log("login error: ", error.message);
         res.json({
             success: false,
             message: error.message
@@ -112,7 +113,7 @@ const logIn = async (req, res) => {
 }
 
 // Controller to check the user's authentication status
-const checkAuth = (req, res) => {
+export const checkAuth = (req, res) => {
     res.json({
         success: true,
         user: req.user
@@ -120,7 +121,7 @@ const checkAuth = (req, res) => {
 }
 
 // Update user profile details
-const updateProfile = async (req, res) => {
+export const updateProfile = async (req, res) => {
     try {
         const { profilePic, bio, name } = req.body;
         const userId = req.user._id;
@@ -139,17 +140,10 @@ const updateProfile = async (req, res) => {
             message: 'Successfully updated the profile details!'
         })
     } catch (error) {
-        console.log(error.message);
+        console.log("update profile error: ", error.message);
         res.json({
             success: false,
             message: error.message
         })
     }
 }
-
-export default {
-    signUp,
-    logIn,
-    checkAuth,
-    updateProfile
-};

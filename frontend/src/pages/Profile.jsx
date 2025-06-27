@@ -1,28 +1,65 @@
 import React, { useContext, useState } from 'react'
 import AppContext from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const Profile = () => {
-    const { setExistingUser } = useContext(AppContext);
+    const { updateProfile, setNav } = useContext(AppContext);
 
     const navigate = useNavigate();
 
-    const [image, setImage] = useState('/profile.png');
+    const [previewImage, setPreviewImage] = useState('/profile.png'); // For preview
+    const [imageFile, setImageFile] = useState(null); // For upload
     const [name, setName] = useState('');
     const [bio, setBio] = useState('');
 
     const handleImage = (e) => {
         const file = e.target.files[0];
-        if(file) {
-            const imageUrl = URL.createObjectURL(file);
-            setImage(imageUrl);
+        if (file) {
+            setPreviewImage(URL.createObjectURL(file));
+            setImageFile(file);
         }
-    }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        navigate('/');
-        setExistingUser(true);
+
+        // Check if user selected a new image
+        if(imageFile) {
+            try {
+                const reader = new FileReader();
+                reader.readAsDataURL(imageFile);
+                reader.onload = async () => {
+                    const base64Image = reader.result;
+                    const res = await updateProfile({
+                        name,
+                        bio,
+                        profilePic: base64Image
+                    });
+                    if (res?.success) {
+                        setNav(true);
+                        navigate('/');
+                    }
+                }
+                reader.onerror = () => {
+                    toast.error('Failed to upload image. Please try again!');
+                };
+            } catch (error) {
+                toast.error(error.message);
+            }
+            
+        } else {
+            // User didn't select any image — use default profile image
+            const res = await updateProfile({
+                name,
+                bio,
+                profilePic: import.meta.env.VITE_DEFAULT_CLOUDINARY_PROFILE_PIC_URL
+            });
+            if (res?.success) {
+                setNav(true);
+                navigate('/');
+            }
+        }
     }
 
     return (
@@ -30,14 +67,14 @@ const Profile = () => {
         {/* Profile Image Section */}
             <div className="flex flex-col items-center justify-center gap-6 w-full md:w-2/5 lg:w-1/2 h-1/2 md:h-full text-white py-10">
                 <div className="w-40 max-w-[300px] md:w-3/5 aspect-square overflow-hidden rounded-lg border-2 border-white flex items-center justify-center text-sm">
-                    {image !== '/profile.png' ? (
-                        <img src={image} alt="Profile" className="w-full h-full object-cover" />
+                    {previewImage !== '/profile.png' ? (
+                        <img src={previewImage} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
                         'Upload Profile Image'
                     )}
                 </div>
                 <label htmlFor="imageUpload" className="flex items-center gap-3 px-5 py-2 border-2 border-dashed rounded-md cursor-pointer hover:bg-white/10 transition max-md:text-sm">
-                    {image !== '/profile.png' ? 'Change Image' : 'Upload Image'}
+                    {previewImage !== '/profile.png' ? 'Change Image' : 'Upload Image'}
                     <img src="/upload.png" className="w-5" />
                 </label>    
                 <input

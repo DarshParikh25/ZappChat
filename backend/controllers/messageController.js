@@ -1,10 +1,10 @@
 import User from '../models/user.js';
 import Message from '../models/message.js';
 import cloudinary from '../lib/cloudinary.js';
-import { io, userSocketMap } from '../server.js';
+import { sio, userSocketMap } from '../server.js';
 
 // Get all users except logged in users and their unseen messages(if any)
-const getUsersToChat = async (req, res) => {
+export const getUsersToChat = async (req, res) => {
     try {
         const userId = req.user._id;
         const filteredUser = await User.find({ _id: { $ne: userId } }).select("-password");
@@ -36,7 +36,7 @@ const getUsersToChat = async (req, res) => {
 }
 
 // Get all messages from selected user
-const getMessages = async (req, res) => {
+export const getMessages = async (req, res) => {
     try {
         const { id: selectedUserId } = req.params
         const myId = req.user._id;
@@ -73,7 +73,7 @@ const getMessages = async (req, res) => {
 }
 
 // To mark seen for individual message
-const seenMessage = async (req, res) => {
+export const seenMessage = async (req, res) => {
     try {
         const { id } = req.params;
         await Message.findByIdAndUpdate(id, { seen: true });
@@ -90,7 +90,7 @@ const seenMessage = async (req, res) => {
 }
 
 // Send message to a selected user
-const sendMessage = async (req, res) => {
+export const sendMessage = async (req, res) => {
     try {
         const { text, image } = req.body;
         const receiverId = req.params.id;
@@ -114,7 +114,7 @@ const sendMessage = async (req, res) => {
         const receiverSocketId = userSocketMap[receiverId];
 
         if(receiverSocketId) {
-            io.to(receiverSocketId).emit('newMessage', newMessage);
+            sio.to(receiverSocketId).emit('newMessage', newMessage);
         }
 
         res.json({
@@ -128,11 +128,4 @@ const sendMessage = async (req, res) => {
             message: error.message
         })
     }
-}
-
-export default {
-    getUsersToChat,
-    getMessages,
-    seenMessage,
-    sendMessage
 }

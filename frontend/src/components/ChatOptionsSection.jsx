@@ -19,7 +19,7 @@ const ChatOptionsSection = () => {
             </div>
 
             <div className='overflow-y-scroll h-[74vh]'>
-                {users.map((user, index) => (
+                {users?.map((user, index) => (
                     <div onClick={() => {
                             setSelectedUser(user);  
                             handleNewMessages(index)
