@@ -18,13 +18,14 @@ const AppContextProvider = (props) => {
 
     const [selectedUser, setSelectedUser] = useState({});
     const [showUserProfileSec, setShowUserProfileSec] = useState(false);
-    const [loggedIn, setLoggedIn] = useState(false);
+    const [loggedIn, setLoggedIn] = useState(localStorage.getItem('token') !== null ? true : false);
     const [state, setState] = useState('login');
     const [nav, setNav] = useState(false);
     const [token, setToken] = useState(localStorage.getItem('token'));
     const [authUser, setAuthUser] = useState(null);
     const [onlineUsers, setOnlineUsers] = useState([]);
     const [socket, setSocket] = useState(null);
+    // const [loading, setLoading] = useState(true);
         // {
         //     _id: "1",
         //     name: 'Darsh Parikh',
@@ -117,6 +118,7 @@ const AppContextProvider = (props) => {
 
     // Function to handle socket connection and online users updates
     const connectSocket = async (userData) => {
+        // Avoid reconnecting
         if(!userData || socket?.connected) {
             return;
         }
@@ -154,8 +156,9 @@ const AppContextProvider = (props) => {
                 axios.defaults.headers.common['token'] = data.token;
                 setAuthUser(data.userData);
                 localStorage.setItem('token', data.token);
+                setToken(data.token);
                 toast.success(data.message);
-                return { success: true };
+                return { success: true, user: data.userData };
             } else {
                 toast.error(data.message);
                 return { success: false };
@@ -169,19 +172,25 @@ const AppContextProvider = (props) => {
     // Handle login for user authentication and socket connection
     const register = async (credentials) => {
         try {
+            console.log(credentials);
             const { data } = await axios.post('/api/auth/sign-up', credentials);
+            console.log(data);
             if(data.success) {
                 setSocket(data.userData);
                 connectSocket(data.userData);
                 axios.defaults.headers.common['token'] = data.token;
-                // setAuthUser(data.userData);
                 localStorage.setItem('token', data.token);
+                setToken(data.token);
+                setAuthUser(null);
                 toast.success(data.message);
+                return { success: true }
             } else {
                 toast.error(data.message);
+                return { success: false }
             }
         } catch (error) {
             toast.error(error.message);
+            return { success: false }
         }
     }
 
@@ -223,7 +232,7 @@ const AppContextProvider = (props) => {
         if(token) {
             axios.defaults.headers.common['token'] = token;
         }
-        checkAuth();
+        checkAuth(); // Called only once on mount
     }, [])
 
     const value = {

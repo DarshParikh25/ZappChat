@@ -1,17 +1,27 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import AppContext from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 const Profile = () => {
-    const { updateProfile, setNav } = useContext(AppContext);
+    const { updateProfile, setNav, authUser } = useContext(AppContext);
 
     const navigate = useNavigate();
 
-    const [previewImage, setPreviewImage] = useState('/profile.png'); // For preview
-    const [imageFile, setImageFile] = useState(null); // For upload
-    const [name, setName] = useState('');
-    const [bio, setBio] = useState('');
+    const [previewImage, setPreviewImage] = useState(authUser?.profilePic || '/profile.png'); // For preview
+    const [imageFile, setImageFile] = useState(authUser?.profilePic || null); // For upload
+    const [name, setName] = useState(authUser?.name || '');
+    const [bio, setBio] = useState(authUser?.bio || '');
+    const [isDisabled, setIsDisabled] = useState(false);
+
+    useEffect(() => {
+    if (authUser) {
+        setName(authUser.name || '');
+        setBio(authUser.bio || '');
+        setPreviewImage(authUser.profilePic || '/profile.png');
+        setImageFile(null); // Since no new file is selected yet
+    }
+}, [authUser]);
 
     const handleImage = (e) => {
         const file = e.target.files[0];
@@ -20,47 +30,57 @@ const Profile = () => {
             setImageFile(file);
         }
     };
-
+    
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsDisabled(true);
 
-        // Check if user selected a new image
-        if(imageFile) {
-            try {
+        try {
+            let profilePic = '';
+
+            if (imageFile instanceof File) {
+                // Convert uploaded image to base64
                 const reader = new FileReader();
-                reader.readAsDataURL(imageFile);
+
                 reader.onload = async () => {
-                    const base64Image = reader.result;
-                    const res = await updateProfile({
-                        name,
-                        bio,
-                        profilePic: base64Image
-                    });
+                    profilePic = reader.result;
+
+                    const res = await updateProfile({ name, bio, profilePic });
                     if (res?.success) {
                         setNav(true);
                         navigate('/');
                     }
-                }
-                reader.onerror = () => {
-                    toast.error('Failed to upload image. Please try again!');
+                    setIsDisabled(false);
                 };
-            } catch (error) {
-                toast.error(error.message);
+
+                reader.onerror = () => {
+                    toast.error('Failed to read image file.');
+                    setIsDisabled(false);
+                };
+
+                reader.readAsDataURL(imageFile);
+                return; // Exit early as the update will be handled in reader.onload
+            } else {
+                // No new image uploaded
+                if (authUser?.profilePic && authUser.profilePic !== '') {
+                    profilePic = authUser.profilePic;
+                } else {
+                    profilePic = import.meta.env.VITE_DEFAULT_CLOUDINARY_PROFILE_PIC_URL;
+                }
+
+                const res = await updateProfile({ name, bio, profilePic });
+                if (res?.success) {
+                    setNav(true);
+                    navigate('/');
+                }
+                setIsDisabled(false);
             }
-            
-        } else {
-            // User didn't select any image — use default profile image
-            const res = await updateProfile({
-                name,
-                bio,
-                profilePic: import.meta.env.VITE_DEFAULT_CLOUDINARY_PROFILE_PIC_URL
-            });
-            if (res?.success) {
-                setNav(true);
-                navigate('/');
-            }
+        } catch (error) {
+            toast.error(error.message);
+            setIsDisabled(false);
         }
-    }
+    };
+
 
     return (
         <div className="flex flex-col md:flex-row w-full h-screen bg-black">
@@ -73,7 +93,7 @@ const Profile = () => {
                         'Upload Profile Image'
                     )}
                 </div>
-                <label htmlFor="imageUpload" className="flex items-center gap-3 px-5 py-2 border-2 border-dashed rounded-md cursor-pointer hover:bg-white/10 transition max-md:text-sm">
+                <label htmlFor="imageUpload" className={`flex items-center gap-3 px-5 py-2 border-2 border-dashed rounded-md hover:bg-white/10 transition max-md:text-sm ${isDisabled ? 'cursor-not-allowed pointer-events-none opacity-50' : 'cursor-pointer'}`}>
                     {previewImage !== '/profile.png' ? 'Change Image' : 'Upload Image'}
                     <img src="/upload.png" className="w-5" />
                 </label>    
@@ -115,9 +135,10 @@ const Profile = () => {
 
                     <button
                         type="submit"
-                        className="w-[80%] py-2 bg-[#c7c5b6] text-black rounded-lg hover:scale-[1.02] transition-all duration-500 cursor-pointer mt-6 font-semibold"
+                        disabled={isDisabled}
+                        className={`w-[80%] py-2 text-black rounded-lg mt-6 font-semibold ${isDisabled ? 'bg-[#c7c5b67e] cursor-not-allowed' : 'bg-[#c7c5b6] cursor-pointer hover:scale-[1.02] transition-all duration-500'}`}
                     >
-                        Save
+                        {isDisabled ? 'Saving...' : 'Save'}
                     </button>
                 </form>
             </div>
