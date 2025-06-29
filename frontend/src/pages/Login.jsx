@@ -1,15 +1,24 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import AppContext from '../context/AppContext';
 
 const Login = () => {
-    const { setState, setLoggedIn, login, setNav } = useContext(AppContext);
+    const { setState, setLoggedIn, login, setNav, loading, authUser } = useContext(AppContext);
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isDisabled, setIsDisabled] = useState(false);
 
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!loading && authUser !== null) {
+            const token = localStorage.getItem('token');
+            if (token) {
+                navigate('/');
+            }
+        }
+    }, [loading, navigate]);
     
     const handleSubmit = async (e) => {
         e.preventDefault();

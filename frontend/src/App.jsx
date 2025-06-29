@@ -10,7 +10,9 @@ import AppContext from './context/AppContext'
 import SignUp from './pages/SignUp'
 
 const App = () => {
-  const { loggedIn, authUser, nav } = useContext(AppContext);
+  const { loggedIn, authUser, nav, loading } = useContext(AppContext);
+
+  if (loading) return null;
 
   return (
       <div className={`bg-black h-screen ${loggedIn && nav && 'px-12 py-8'}`}>
@@ -21,9 +23,12 @@ const App = () => {
         <Routes>
 
           {/* Home is only accessible when the user is logged in */}
-          <Route path='/' element={
-            loggedIn ? <>{authUser !== null ? <Home /> : <Navigate to={'/profile'} />}</> : <Navigate to={'/login'} />
-          } />
+          <Route 
+            path='/' 
+            element={
+              loggedIn ? <>{authUser !== null ? <Home /> : <Navigate to={'/profile'} />}</> : <Navigate to={'/login'} />
+            } 
+          />
 
           {/* Profile Section is also only accessible when the user is logged in */}
           <Route path='/profile' element={

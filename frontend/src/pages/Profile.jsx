@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 const Profile = () => {
-    const { updateProfile, setNav, authUser } = useContext(AppContext);
-
+    const { updateProfile, setNav, authUser, loading } = useContext(AppContext);
+    
     const navigate = useNavigate();
 
     const [previewImage, setPreviewImage] = useState(authUser?.profilePic || '/profile.png'); // For preview
@@ -13,16 +13,21 @@ const Profile = () => {
     const [name, setName] = useState(authUser?.name || '');
     const [bio, setBio] = useState(authUser?.bio || '');
     const [isDisabled, setIsDisabled] = useState(false);
-
+    
     useEffect(() => {
-    if (authUser) {
-        setName(authUser.name || '');
-        setBio(authUser.bio || '');
-        setPreviewImage(authUser.profilePic || '/profile.png');
-        setImageFile(null); // Since no new file is selected yet
-    }
-}, [authUser]);
-
+        if(!loading && authUser === null) {
+            navigate('/login');
+        } 
+        if (authUser) {
+            setName((prev) => (prev !== authUser.name ? authUser.name : prev));
+            setBio((prev) => (prev !== authUser.bio ? authUser.bio : prev));
+            setPreviewImage((prev) =>
+                prev !== authUser.profilePic ? authUser.profilePic : prev
+                );
+            setImageFile(null);
+        }
+    }, [authUser, loading, navigate]);
+    
     const handleImage = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -81,6 +86,7 @@ const Profile = () => {
         }
     };
 
+    if (loading || !authUser) return null; // Prevent flicker or auth errors
 
     return (
         <div className="flex flex-col md:flex-row w-full h-screen bg-black">

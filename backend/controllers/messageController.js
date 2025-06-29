@@ -7,12 +7,12 @@ import { sio, userSocketMap } from '../server.js';
 export const getUsersToChat = async (req, res) => {
     try {
         const userId = req.user._id;
-        const filteredUser = await User.find({ _id: { $ne: userId } }).select("-password");
+        const filteredUsers = await User.find({ _id: { $ne: userId } }).select("-password");
 
         // Count number of unseen messages
         const unseenMessages = {}
 
-        const promises = filteredUser.map(async (user) => {
+        const promises = filteredUsers.map(async (user) => {
             const messages = await Message.find({ senderId: user._id, receiverId: userId, seen: false });
             if(messages.length > 0) {
                 unseenMessages[user._id] = messages.length
@@ -23,7 +23,7 @@ export const getUsersToChat = async (req, res) => {
 
         res.json({
             success: true,
-            user: filteredUser,
+            users: filteredUsers,
             unseenMessages
         })
     } catch (error) {
@@ -101,6 +101,7 @@ export const sendMessage = async (req, res) => {
         if(image) {
             const uploadResponse = await cloudinary.uploader.upload(image);
             imageUrl = uploadResponse.secure_url;
+            console.log("Cloudinary response:", uploadResponse);
         }
 
         const newMessage = await Message.create({ 

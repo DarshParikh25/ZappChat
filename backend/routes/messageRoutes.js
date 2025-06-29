@@ -4,9 +4,9 @@ import { getUsersToChat, getMessages, seenMessage, sendMessage } from '../contro
 
 const messageRouter = express.Router();
 
-messageRouter.get('/user', protectRoute, getUsersToChat);
+messageRouter.get('/users', protectRoute, getUsersToChat);
 messageRouter.get('/:id', protectRoute, getMessages);
-messageRouter.put('mark/:id', protectRoute, seenMessage);
+messageRouter.put('/mark/:id', protectRoute, seenMessage);
 messageRouter.post('/send/:id', protectRoute, sendMessage);
 
 export default messageRouter;

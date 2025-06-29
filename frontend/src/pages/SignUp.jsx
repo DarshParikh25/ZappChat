@@ -1,9 +1,9 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import AppContext from '../context/AppContext';
 
 const SignUp = () => {
-    const { setState, setLoggedIn, register, authUser } = useContext(AppContext);
+    const { setState, setLoggedIn, register, loading, authUser } = useContext(AppContext);
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -11,6 +11,12 @@ const SignUp = () => {
     const [isDisabled, setIsDisabled] = useState(false);
 
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!loading && authUser !== null) {
+            navigate('/');
+        }
+    }, [loading, authUser, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -20,7 +26,7 @@ const SignUp = () => {
             email,
             password
         })
-        if(res.success && authUser === null) {
+        if(res.success) {
             setLoggedIn(true);
             navigate('/profile');
         }

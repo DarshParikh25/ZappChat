@@ -1,9 +1,11 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import AppContext from '../context/AppContext'
 
 const UserSection = () => {
-    const { selectedUser, setShowUserProfileSec, imagesDummyData } = useContext(AppContext);
+    const { selectedUser, setShowUserProfileSec, messages, onlineUsers } = useContext(AppContext);
+
+    const [msgImage, setMsgImage] = useState([]);
 
     const navigate = useNavigate();
 
@@ -17,20 +19,29 @@ const UserSection = () => {
         }
     }
 
+    // Get all images from messages and store in msgImage state
+    useEffect(() => {
+        setMsgImage(messages.filter((msg) => (
+            msg.image
+        )).map((msg) => (
+            msg.image
+        )))
+    }, [messages])
+
     return (
         <div className='relative md:pl-12 h-[100%]'>
             {
-                Object.keys(selectedUser).length > 0 ? (
+                selectedUser ? (
                     <>
                         {/* Back Icon For Small and Medium Screens */}
                         <img src="/back.png" alt="back" onClick={handleUserProfileSec} className='md:hidden absolute top-7 left-0 w-4 cursor-pointer' />
 
                         {/* Displaying User's Profile Information */}
                         <div className='w-[calc(100% - 3rem)] flex flex-col pt-14 pb-10 items-center border-b border-white/30 gap-3'>
-                            <img src={selectedUser?.profilePic || '/avatar.png'} alt="profile image" className='w-fit' />
+                            <img src={selectedUser?.profilePic || '/avatar.png'} alt="profile image" className='w-fit rounded-full max-w-25 h-fit aspect-[1/1] object-cover object-center' />
                             <div className='flex justify-center items-center gap-2'>
                                 {
-                                    selectedUser?.status === 'Online' &&(
+                                    onlineUsers.includes(selectedUser?._id) &&(
                                         <div className='h-[10px] w-[10px] bg-green-600 rounded-full'></div>
                                     )
                                 }
@@ -43,7 +54,7 @@ const UserSection = () => {
                         <div className='py-5 pl-3 flex flex-col gap-3'>
                             <p className='text-[#c7c5b6]'>Media</p>
                             <div className='overflow-y-scroll max-h-[43vh] grid grid-cols-2 gap-5'>
-                                {imagesDummyData.map((url, index) => (
+                                {msgImage.map((url, index) => (
                                     <div key={index} onClick={() => {window.open(url)}} className='cursor-pointer rounded'>
                                         <img src={url} alt="images shared" className='rounded-md h-full' />
                                     </div>
