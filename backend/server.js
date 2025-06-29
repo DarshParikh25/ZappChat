@@ -18,8 +18,8 @@ const isProd = process.env.NODE_ENV === 'production'
 export const sio = new Server(server, {
     cors: { 
         origin: isProd
-            ? ["https://zappchat.onrender.com"]
-            : ["http://localhost:5173"],
+            ? process.env.DEPLOYED_FRONTEND_URL
+            : "http://localhost:5173",
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
         credentials: true
     }
@@ -50,7 +50,9 @@ sio.on('connection', (socket) => {
 // Middlewares
 app.use(express.json({ limit: '4mb' }));
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: isProd
+        ? process.env.DEPLOYED_FRONTEND_URL
+        : 'http://localhost:5173',
     credentials: true
 }));
 
