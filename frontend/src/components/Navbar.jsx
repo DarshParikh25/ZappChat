@@ -14,7 +14,6 @@ const Navbar = () => {
             <div onClick={() => {navigate('/'); setMenuOpen(false)}} className='flex md:gap-3 sm:gap-2 gap-1 justify-center items-center'>
                 <img src="/favicon.png" alt="" className='md:w-[35px] sm:w-[33px] w-[30px]' />
                 <img src="/logo.png" alt="logo" className='md:w-40 sm:w-36 w-30' />
-                {/* <img src="/main-logo.png" alt="logo" /> */}
             </div>
             <div className='relative md:hidden justify-center items-center'>
                 <img onClick={() => {setMenuOpen(!menuOpen)}} src="/menu.png" alt="menu" className='cursor-pointer' />

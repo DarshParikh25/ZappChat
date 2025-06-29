@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AppContext from '../context/AppContext';
 
 const SignUp = () => {
-    const { setState, setLoggedIn, register, loading, authUser } = useContext(AppContext);
+    const { setState, setLoggedIn, register, loading, authUser, hasLoggedOut } = useContext(AppContext);
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -28,6 +28,7 @@ const SignUp = () => {
         })
         if(res.success) {
             setLoggedIn(true);
+            hasLoggedOut.current = false;
             navigate('/profile');
         }
         setIsDisabled(false);
@@ -41,7 +42,6 @@ const SignUp = () => {
                     <div className='flex items-center gap-4 pb-34'>
                         <img src="/favicon.png" alt="icon" className='max-w-14 h-fit' />
                         <img src="/logo.png" alt="logo" className='max-w-54 h-fit' />
-                        {/* <img src="/main-logo.png" alt="logo" /> */}
                     </div>
                     <h1 className='text-2xl pb-10 tracking-wider font-semibold text-[#c5c7b6]'>Connect. Chat. Converse.</h1>
                     <p className="font-light leading-relaxed text-white max-w-xs">
@@ -59,7 +59,6 @@ const SignUp = () => {
                     <div className='h-1/6 hidden max-lg:flex justify-center items-center sm:gap-3 gap-2'>
                         <img src="/favicon.png" alt="icon" className='w-10 sm:w-14 h-fit' />
                         <img src="/logo.png" alt="logo" className='w-40 sm:w-54 h-fit' />
-                        {/* <img src="/main-logo.png" alt="logo" /> */}
                     </div>
                     <div className='max-sm:w-full h-5/6 w-full sm:max-w-2/3 bg-[#a9a89b] text-black rounded-t-3xl lg:self-start flex flex-col items-center xl:px-10 sm:px-5 py-20'>
                         <p className='text-lg font-light'>Get On Board!</p>

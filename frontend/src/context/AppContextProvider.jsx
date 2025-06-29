@@ -31,76 +31,6 @@ const AppContextProvider = (props) => {
     const [users, setUsers] = useState([]);
     const [messages, setMessages] = useState([]);
     const [unseenMessages, setUnseenMessages] = useState({});
-        // {
-        //     _id: "1",
-        //     name: 'Darsh Parikh',
-        //     email: 'parikhdarsh121@gmail.com',
-        //     profilePic: '/avatar.png',
-        //     bio: "Success will come not immediately, but definitely!",
-        //     status: 'Online',
-        //     newMess: 3
-        // }
-
-    // const messagesDummyData = [
-    //     {
-    //         "_id": "680f571ff10f3cd28382f094",
-    //         "senderId": "680f5116f10f3cd28382ed02",
-    //         "receiverId": "680f50e4f10f3cd28382ecf9",
-    //         "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    //         "seen": true,
-    //         "createdAt": "2025-04-28T10:23:27.844Z",
-    //     },
-    //     {
-    //         "_id": "680f5726f10f3cd28382f0b1",
-    //         "senderId": "680f50e4f10f3cd28382ecf9",
-    //         "receiverId": "680f5116f10f3cd28382ed02",
-    //         "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    //         "seen": true,
-    //         "createdAt": "2025-04-28T10:23:34.520Z",
-    //     },
-    //     {
-    //         "_id": "680f5729f10f3cd28382f0b6",
-    //         "senderId": "680f5116f10f3cd28382ed02",
-    //         "receiverId": "680f50e4f10f3cd28382ecf9",
-    //         "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    //         "seen": true,
-    //         "createdAt": "2025-04-28T10:23:37.301Z",
-    //     },
-    //     {
-    //         "_id": "680f572cf10f3cd28382f0bb",
-    //         "senderId": "680f50e4f10f3cd28382ecf9",
-    //         "receiverId": "680f5116f10f3cd28382ed02",
-    //         "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    //         "seen": true,
-    //         "createdAt": "2025-04-28T10:23:40.334Z",
-    //     },
-    //     {
-    //         "_id": "680f573cf10f3cd28382f0c0",
-    //         "senderId": "680f50e4f10f3cd28382ecf9",
-    //         "receiverId": "680f5116f10f3cd28382ed02",
-    //         "image": '/avatar.png',
-    //         "seen": true,
-    //         "createdAt": "2025-04-28T10:23:56.265Z",
-    //     },
-    //     {
-    //         "_id": "680f5745f10f3cd28382f0c5",
-    //         "senderId": "680f5116f10f3cd28382ed02",
-    //         "receiverId": "680f50e4f10f3cd28382ecf9",
-    //         "image": '/avatar.png',
-    //         "seen": true,
-    //         "createdAt": "2025-04-28T10:24:05.164Z",
-    //     },
-    //     {
-    //         "_id": "680f5748f10f3cd28382f0ca",
-    //         "senderId": "680f5116f10f3cd28382ed02",
-    //         "receiverId": "680f50e4f10f3cd28382ecf9",
-    //         "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    //         "seen": true,
-    //         "createdAt": "2025-04-28T10:24:08.523Z",
-    //     }
-    // ]
-    
-    // const imagesDummyData = ['/pic1.png', '/pic2.png','/pic3.png','/pic4.png','/pic1.png','/pic2.png']
 
     // Auth Context
 
@@ -113,10 +43,16 @@ const AppContextProvider = (props) => {
             setNav(true);
         }
 
+        if (currentPath === '/profile') {
+            setNav(false);
+        }
+
         // Prevent back to login/signup if user is already logged in and authenticated
         const publicRoutes = ['/login', '/sign-up'];
         if (!loading && loggedIn && authUser !== null && publicRoutes.includes(currentPath)) {
-            navigate('/', { replace: true });
+            if(location.pathname !== '/') {
+                navigate('/', { replace: true });
+            }
         }
 
         // Store current path for next render
@@ -151,22 +87,9 @@ const AppContextProvider = (props) => {
                 setNav(true); // Ensures Navbar appears after reload
             }
         } catch {
-            // Handle 401 error explicitly
-            // if (error.response?.status === 401) {
-            //     Object.keys(localStorage).forEach((key) => {
-            //         if (key.startsWith('token')) {
-            //             localStorage.removeItem(key);
-            //         }
-            //     });
-            //     delete axios.defaults.headers.common['token'];
                 setLoggedIn(false);
                 setAuthUser(null);
                 setNav(false);
-            // } else if (error.response?.status === 403) {
-            //     toast.error('You are not logged in.');
-            // }
-            // navigate('/login');
-            // toast.error('Session expired or unauthorized.');
         } finally {
             setLoading(false);
         }
@@ -184,6 +107,7 @@ const AppContextProvider = (props) => {
                 localStorage.setItem(`token`, data.token);
                 setToken(data.token);
                 toast.success(data.message);
+                await checkAuth(); // ensures authUser is fetched and socket connected
                 return { success: true, user: data.userData };
             } else {
                 toast.error(data.message);
@@ -209,6 +133,7 @@ const AppContextProvider = (props) => {
                 setToken(data.token);
                 setAuthUser(null);
                 toast.success(data.message);
+                // await checkAuth(); // ensures proper session
                 setNav(false);
                 return { success: true }
             } else {
@@ -405,6 +330,7 @@ const AppContextProvider = (props) => {
         getUsers,
         getMessages,
         sendMessage,
+        hasLoggedOut
     }
 
     return (

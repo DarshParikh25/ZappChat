@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AppContext from '../context/AppContext';
 
 const Login = () => {
-    const { setState, setLoggedIn, login, setNav, loading, authUser } = useContext(AppContext);
+    const { setState, setLoggedIn, login, setNav, loading, authUser, hasLoggedOut } = useContext(AppContext);
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -29,6 +29,7 @@ const Login = () => {
         })
         if(res.success && res.user !== null) {
             setLoggedIn(true);
+            hasLoggedOut.current = false;
             setNav(true);
             navigate('/');
         }
@@ -42,7 +43,6 @@ const Login = () => {
                 <div className='flex items-center gap-4 pb-34'>
                     <img src="/favicon.png" alt="icon" className='max-w-14 h-fit' />
                     <img src="/logo.png" alt="logo" className='max-w-54 h-fit' />
-                    {/* <img src="/main-logo.png" alt="logo" /> */}
                 </div>
                 <h1 className='text-2xl pb-10 tracking-wider font-semibold text-[#c5c7b6]'>Connect. Chat. Converse.</h1>
                 <p className="font-light leading-relaxed text-white max-w-xs">
@@ -60,7 +60,6 @@ const Login = () => {
                 <div className='h-1/6 hidden max-lg:flex justify-center items-center sm:gap-3 gap-2'>
                     <img src="/favicon.png" alt="icon" className='w-10 sm:w-14 h-fit' />
                     <img src="/logo.png" alt="logo" className='w-40 sm:w-54 h-fit' />
-                    {/* <img src="/main-logo.png" alt="logo" /> */}
                 </div>
                 <div className='max-sm:w-full h-5/6 w-full sm:max-w-2/3 bg-[#a9a89b] text-black rounded-t-3xl lg:self-start flex flex-col items-center xl:px-10 sm:px-5 py-20'>
                     <p className='text-lg font-light'>Welcome Back!</p>

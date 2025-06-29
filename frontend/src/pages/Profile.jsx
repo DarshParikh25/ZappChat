@@ -93,7 +93,7 @@ const Profile = () => {
         {/* Profile Image Section */}
             <div className="flex flex-col items-center justify-center gap-6 w-full md:w-2/5 lg:w-1/2 h-1/2 md:h-full text-white py-10">
                 <div className="w-40 max-w-[300px] md:w-3/5 aspect-square overflow-hidden rounded-lg border-2 border-white flex items-center justify-center text-sm">
-                    {previewImage !== '/profile.png' ? (
+                    {previewImage && previewImage !== '/profile.png' ? (
                         <img src={previewImage} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
                         'Upload Profile Image'
