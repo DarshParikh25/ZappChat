@@ -18,7 +18,7 @@ const isProd = process.env.NODE_ENV === 'production'
 export const sio = new Server(server, {
     cors: { 
         origin: isProd
-            ? ["http://localhost:5173"]
+            ? ["https://zappchat.onrender.com"]
             : ["http://localhost:5173"],
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
         credentials: true
