@@ -56,8 +56,10 @@ app.use(cors({
     credentials: true
 }));
 
+app.options('*', cors()); // Handles preflight requests
+
 // Routes
-app.use('/api/status', (erq, res) => {
+app.use('/api/status', (req, res) => {
     res.send("Server is live!");
 });
 app.use('/api/auth', userRouter);
