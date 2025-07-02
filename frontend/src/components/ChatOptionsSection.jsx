@@ -35,7 +35,7 @@ const ChatOptionsSection = () => {
                         key={index}
                         className={
                             `flex items-center justify-between
-                            ${selectedUser !== null ? 'bg-[#1d1d1d]' : 'bg-transparent hover:bg-[#1d1d1d]/70'} 
+                            ${selectedUser?._id === user._id ? 'bg-[#1d1d1d]' : 'bg-transparent hover:bg-[#1d1d1d]/70'} 
                             pr-5 pl-4 py-2 transition-all duration-300 cursor-pointer rounded-full mt-3`
                         }
                     >
