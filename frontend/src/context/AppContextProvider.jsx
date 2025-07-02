@@ -100,7 +100,7 @@ const AppContextProvider = (props) => {
         try {
             const { data } = await axios.post('/api/auth/login', credentials);
             if(data.success) {
-                setSocket(data.userData);
+                // setSocket(data.userData);
                 connectSocket(data.userData);
                 axios.defaults.headers.common['token'] = data.token;
                 setAuthUser(data.userData);
