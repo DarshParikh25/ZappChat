@@ -35,10 +35,7 @@
 
 - 🌿 **MongoDB**
 - 🌿 **Mongoose ODM**
-
-### 🔹 API
-
-- 🖼️ **Cloudinary API**
+- 🖼️ **Cloudinary**
 
 ### 🔹 Deployment
 - 🚢 Hosted on **[Render](https://render.com)**
